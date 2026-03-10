@@ -1,6 +1,8 @@
 /*
-Usercase 1: Application Entry & Welcome Message
-* */
+*Usercase 1: Application Entry & Welcome Message
+* @author Shikher
+* @version 1.0
+*/
 
 
 public class HotelBookingApp{
