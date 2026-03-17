@@ -13,7 +13,6 @@ class FilePersistenceService {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             Map<String, Integer> data = inventory.getInventoryMap();
             for (Map.Entry<String, Integer> entry : data.entrySet()) {
-                // Formatting: Single Room-5
                 writer.write(entry.getKey() + "-" + entry.getValue());
                 writer.newLine();
             }
