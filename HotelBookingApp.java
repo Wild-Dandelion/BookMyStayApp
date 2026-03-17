@@ -1,57 +1,81 @@
 /*
- * Use Case 8: Booking History & Reporting
+ * Use Case 10: Booking Cancellation & Inventory Rollback
  * @author Shikher
- * @version 8.0
+ * @version 10.0
  */
 
 import java.util.*;
 
-class InvalidBookingException extends Exception {
-    public InvalidBookingException(String message) {
-        super(message);
+class CancellationService {
+    private Stack<String> releasedRoomIds;
+    private Map<String, String> reservationRoomTypeMap;
+
+    public CancellationService() {
+        releasedRoomIds = new Stack<>();
+        reservationRoomTypeMap = new HashMap<>();
     }
-}
 
-class ReservationValidator {
-    public void validate(String guestName, String roomType, RoomInventory inventory)
-            throws InvalidBookingException {
 
-        if (guestName == null || guestName.trim().isEmpty()) {
-            throw new InvalidBookingException("Guest name cannot be empty.");
+    public void registerBooking(String reservationId, String roomType) {
+        reservationRoomTypeMap.put(reservationId, roomType);
+    }
+
+
+    public void cancelBooking(String reservationId, RoomInventory inventory) {
+        if (!reservationRoomTypeMap.containsKey(reservationId)) {
+            System.out.println("Error: Reservation ID not found.");
+            return;
         }
 
-        List<String> validTypes = Arrays.asList("Single", "Double", "Suite");
-        if (!validTypes.contains(roomType)) {
-            throw new InvalidBookingException("Invalid room type selected.");
-        }
+        String roomType = reservationRoomTypeMap.get(reservationId);
+
+        inventory.addRoom(roomType);
+
+        releasedRoomIds.push(reservationId);
+
+        reservationRoomTypeMap.remove(reservationId);
+
+        System.out.println("Booking cancelled successfully. Inventory restored for room type: " + roomType);
     }
-}
 
-// --- Main Application ---
-public class HotelBookingApp {
-    public static void main(String[] args) {
-        System.out.println("Booking Validation");
-        Scanner scanner = new Scanner(System.in);
-        RoomInventory inventory = new RoomInventory();
-        ReservationValidator validator = new ReservationValidator();
-
-        try {
-            System.out.print("Enter guest name: ");
-            String guestName = scanner.nextLine();
-
-            System.out.print("Enter room type (Single/Double/Suite): ");
-            String roomType = scanner.nextLine();
-            validator.validate(guestName, roomType, inventory);
-
-            System.out.println("Validation successful for " + guestName);
-
-        } catch (InvalidBookingException e) {
-            System.out.println("Booking failed: " + e.getMessage());
-        } finally {
-            scanner.close();
+    public void showRollbackHistory() {
+        System.out.println("Rollback History (Most Recent First):");
+        for (int i = releasedRoomIds.size() - 1; i >= 0; i--) {
+            System.out.println("Released Reservation ID: " + releasedRoomIds.get(i));
         }
     }
 }
 
 class RoomInventory {
+    private Map<String, Integer> availableRooms = new HashMap<>();
+
+    public RoomInventory() {
+        // Initializing with some dummy data
+        availableRooms.put("Single", 5);
+    }
+
+    public void addRoom(String type) {
+        availableRooms.put(type, availableRooms.getOrDefault(type, 0) + 1);
+    }
+
+    public int getAvailability(String type) {
+        return availableRooms.getOrDefault(type, 0);
+    }
+}
+
+public class HotelBookingApp {
+    public static void main(String[] args) {
+        System.out.println("Booking Cancellation");
+
+        RoomInventory inventory = new RoomInventory();
+        CancellationService cancellationService = new CancellationService();
+
+        String resId = "Single-1";
+        cancellationService.registerBooking(resId, "Single");
+
+        cancellationService.cancelBooking(resId, inventory);
+
+        cancellationService.showRollbackHistory();
+        System.out.println("Updated Single Room Availability: " + inventory.getAvailability("Single"));
+    }
 }
