@@ -49,7 +49,6 @@ class RoomInventory {
     private Map<String, Integer> availableRooms = new HashMap<>();
 
     public RoomInventory() {
-        // Initial defaults
         availableRooms.put("Single Room", 5);
         availableRooms.put("Double Room", 3);
         availableRooms.put("Suite Room", 2);
